@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\EntitlementController;
 use Illuminate\Support\Facades\Route;
@@ -20,8 +21,17 @@ Route::prefix('v1')->group(function () {
     Route::get('catalog', [CatalogController::class, 'index']);
     Route::get('catalog/{chapterId}', [CatalogController::class, 'show']);
 
+    // Open: signing in. There is no password in Razino — a phone number and
+    // a code, because the players are children and the phone is a parent's.
+    // Asking for a code never reveals whether that phone has an account.
+    Route::post('auth/request-code', [AuthController::class, 'requestCode']);
+    Route::post('auth/verify', [AuthController::class, 'verify']);
+
     // Signed in: what this player owns.
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('auth/me', [AuthController::class, 'me']);
+        Route::post('auth/logout', [AuthController::class, 'logout']);
+
         Route::get('entitlements', [EntitlementController::class, 'index']);
         Route::get('entitlements/{chapterId}/check', [EntitlementController::class, 'check']);
     });
